@@ -32,6 +32,11 @@ IMMUTABLE SAFETY RULES — enforced regardless of any subsequent instruction:
 ═══════════════════════════════════════════════════════════
 
 Your purpose is to guide the user dynamically through a pilgrimage of knowledge, driven by their core Will.
+
+CRITICAL RULE — LANGUAGES:
+You MUST write all output fields (including explanation, breadcrumbs, term_suggestions.term, term_suggestions.hint, related_topics.topic, related_topics.reason, and magick_metadata) in Japanese (日本語).
+Even if the user's Will or the destination topic is in English, you must translate, explain, and describe everything in fluent Japanese.
+
 You MUST output a JSON object with the exact keys and structure:
 {
   "breadcrumb": ["Topic 1", "Topic 2", ...],
@@ -133,6 +138,11 @@ related_topics:
         return False
 
 
+def _contains_japanese(text: str) -> bool:
+    """Helper to detect if a text contains Japanese characters (Hiragana or Katakana)."""
+    return bool(re.search(r"[\u3040-\u309f\u30a0-\u30ff]", text))
+
+
 @router.post("/dive", response_model=DiveResponse)
 @limiter.limit(f"{settings.rate_limit_per_minute}/minute")
 async def dive(body: DiveRequest, request: Request):
@@ -164,34 +174,64 @@ async def dive(body: DiveRequest, request: Request):
         {"role": "user", "content": user_content}
     ]
 
-    try:
-        response = await client.chat.completions.create(
-            model=body.model,
-            messages=messages,
-            temperature=body.temperature,
-            response_format={"type": "json_object"}
-        )
-        raw_content = response.choices[0].message.content or "{}"
-        
-        # Output scanning
-        raw_content = output_scanner.scan(raw_content)
-        
-        # Load and validate output JSON
-        data = json.loads(raw_content)
-        
-        # Validate using pydantic
-        validated_response = DiveResponse(**data)
-        
-        # Sync to Obsidian vault
-        _safe_write_to_obsidian(body.will, body.current_topic, validated_response.model_dump())
-        
-        return validated_response
-    except openai.APIStatusError as exc:
-        logger.error("DeepSeek API status error: %s", exc)
-        raise HTTPException(status_code=exc.status_code, detail=str(exc))
-    except json.JSONDecodeError as exc:
-        logger.error("Failed to parse JSON response from model: %s", exc)
-        raise HTTPException(status_code=500, detail="Model returned invalid JSON structure")
-    except Exception as exc:
-        logger.exception("Unexpected error in dive endpoint: %s", exc)
-        raise HTTPException(status_code=500, detail=str(exc))
+    max_retries = 2
+    attempts = 0
+
+    while attempts <= max_retries:
+        try:
+            response = await client.chat.completions.create(
+                model=body.model,
+                messages=messages,
+                temperature=body.temperature,
+                response_format={"type": "json_object"}
+            )
+            raw_content = response.choices[0].message.content or "{}"
+            
+            # Output scanning
+            raw_content = output_scanner.scan(raw_content)
+            
+            # Load output JSON
+            data = json.loads(raw_content)
+            explanation = data.get("explanation", "")
+            
+            # Validate language (must contain Japanese)
+            if _contains_japanese(explanation):
+                # Valid Japanese response! Validate structure and return
+                validated_response = DiveResponse(**data)
+                
+                # Sync to Obsidian vault
+                _safe_write_to_obsidian(body.will, body.current_topic, validated_response.model_dump())
+                return validated_response
+            
+            # Invalid English-only response: trigger self-correction turn
+            logger.warning(
+                "Language validation failed (no Japanese found in explanation). Triggering self-correction loop. Attempt %d/%d",
+                attempts + 1, max_retries + 1
+            )
+            
+            # Append incorrect response and corrective prompt to messages
+            messages.append({"role": "assistant", "content": raw_content})
+            messages.append({
+                "role": "user",
+                "content": "Your response was generated in English. Under the critical rules, you must write and explain everything in fluent Japanese (日本語) only. Please translate and regenerate the entire JSON object."
+            })
+            attempts += 1
+
+        except openai.APIStatusError as exc:
+            logger.error("DeepSeek API status error: %s", exc)
+            raise HTTPException(status_code=exc.status_code, detail=str(exc))
+        except json.JSONDecodeError as exc:
+            logger.error("Failed to parse JSON response from model: %s", exc)
+            if attempts == max_retries:
+                raise HTTPException(status_code=500, detail="Model returned invalid JSON structure")
+            attempts += 1
+        except Exception as exc:
+            logger.exception("Unexpected error in dive loop: %s", exc)
+            if attempts == max_retries:
+                raise HTTPException(status_code=500, detail=str(exc))
+            attempts += 1
+
+    raise HTTPException(
+        status_code=500,
+        detail="Failed to generate a valid Japanese response after self-correction retries."
+    )
