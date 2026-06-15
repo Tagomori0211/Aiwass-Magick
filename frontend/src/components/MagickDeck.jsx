@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeHighlight from 'rehype-highlight';
@@ -241,11 +241,18 @@ function MagickLoader() {
 export default function MagickDeck({ will, currentResponse, isLoading, onSetWill, onDive }) {
   const [activeTerm, setActiveTerm] = useState(null);
   const [customTopic, setCustomTopic] = useState('');
+  const containerRef = useRef(null);
 
   useEffect(() => {
     setActiveTerm(null);
     setCustomTopic('');
   }, [currentResponse]);
+
+  useEffect(() => {
+    if (isLoading && containerRef.current) {
+      containerRef.current.scrollTop = 0;
+    }
+  }, [isLoading]);
 
   if (!will || !currentResponse) {
     return <EmptyDeck onSetWill={onSetWill} isLoading={isLoading} />;
@@ -254,7 +261,7 @@ export default function MagickDeck({ will, currentResponse, isLoading, onSetWill
   const { breadcrumb, explanation, term_suggestions, related_topics, magick_metadata } = currentResponse;
 
   return (
-    <main className="flex-1 overflow-y-auto bg-cosmic-dark px-6 py-8 relative">
+    <main ref={containerRef} className="flex-1 overflow-y-auto bg-cosmic-dark px-6 py-8 relative">
       <div className="max-w-4xl mx-auto space-y-8 animate-fade-in pb-16">
         
         {/* Navigation & Status Header */}
