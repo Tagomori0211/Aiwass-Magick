@@ -74,6 +74,90 @@ function EmptyDeck({ onSetWill, isLoading }) {
   );
 }
 
+const LOADING_MESSAGES = [
+  'Aligning the Will Anchor...',
+  'Drawing from the Nuit space of all possibilities...',
+  'Formulating context gravity vector...',
+  'Invoking the Aiwass Synthesizer...',
+  'Materializing concept shards (Hadit)...',
+  'Forging local Obsidian Markdown sync...',
+];
+
+function MagickLoader() {
+  const [msgIdx, setMsgIdx] = useState(0);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setMsgIdx((prev) => (prev + 1) % LOADING_MESSAGES.length);
+    }, 2500);
+    return () => clearInterval(timer);
+  }, []);
+
+  return (
+    <div className="absolute inset-0 bg-night-950/85 backdrop-blur-md z-50 flex flex-col items-center justify-center select-none animate-fade-in p-6">
+      <div className="relative flex items-center justify-center">
+        {/* Glow effect background */}
+        <div className="absolute w-72 h-72 rounded-full bg-violet-accent/5 filter blur-3xl" />
+        
+        {/* Magic Circle SVG */}
+        <svg className="w-64 h-64 md:w-80 md:h-80 text-violet-accent/60" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <path id="textCircle" d="M 150, 150 m -115, 0 a 115,115 0 1,1 230,0 a 115,115 0 1,1 -230,0" fill="none" />
+          </defs>
+          
+          {/* Outermost circle */}
+          <circle cx="150" cy="150" r="140" stroke="currentColor" strokeWidth="1" strokeDasharray="6 4" className="animate-spin-slow" />
+          <circle cx="150" cy="150" r="133" stroke="currentColor" strokeWidth="1.5" />
+          
+          {/* Spell Text (Reversing) */}
+          <g className="animate-spin-reverse-slow">
+            <text fill="currentColor" className="text-[8.5px] font-mono tracking-[0.22em] uppercase font-bold opacity-80">
+              <textPath href="#textCircle" startOffset="0%">
+                Do what thou wilt shall be the whole of the Law • Love is the law, love under will • Hadit Nuit Thelema •
+              </textPath>
+            </text>
+          </g>
+          
+          {/* Middle structures */}
+          <circle cx="150" cy="150" r="105" stroke="currentColor" strokeWidth="1.2" />
+          <circle cx="150" cy="150" r="100" stroke="currentColor" strokeWidth="1" strokeDasharray="16 6" className="animate-spin-medium" />
+          
+          {/* Hexagram (Double Triangle) */}
+          <g className="animate-spin-slow">
+            <polygon points="150,47 239,201 61,201" stroke="currentColor" strokeWidth="1" className="opacity-70" />
+            <polygon points="150,253 239,99 61,99" stroke="currentColor" strokeWidth="1" className="opacity-70" />
+            {/* Additional inner heptagon or details */}
+            <circle cx="150" cy="150" r="80" stroke="currentColor" strokeWidth="0.8" strokeDasharray="2 4" />
+          </g>
+          
+          {/* Innermost ring */}
+          <circle cx="150" cy="150" r="50" stroke="currentColor" strokeWidth="1.5" />
+          
+          {/* Core Symbol */}
+          <g className="animate-pulse-slow">
+            <circle cx="150" cy="150" r="12" fill="currentColor" className="text-violet-accent/20" />
+            <circle cx="150" cy="150" r="8" stroke="currentColor" strokeWidth="1" />
+            <path d="M 150, 132 L 150, 168 M 132, 150 L 168, 150" stroke="currentColor" strokeWidth="1" className="opacity-80" />
+          </g>
+        </svg>
+        
+        {/* Pulsing center star */}
+        <span className="absolute text-xl text-violet-accent animate-pulse font-light">✦</span>
+      </div>
+      
+      {/* Mystical Messages */}
+      <div className="mt-8 text-center space-y-2 max-w-sm">
+        <p className="text-xs font-mono tracking-widest text-violet-accent uppercase animate-pulse">
+          {LOADING_MESSAGES[msgIdx]}
+        </p>
+        <p className="text-[10px] text-slate-600 font-mono tracking-wider uppercase">
+          Aiwass is materializing Nuit possibilities
+        </p>
+      </div>
+    </div>
+  );
+}
+
 export default function MagickDeck({ will, currentResponse, isLoading, onSetWill, onDive }) {
   const [activeTerm, setActiveTerm] = useState(null);
 
@@ -118,18 +202,7 @@ export default function MagickDeck({ will, currentResponse, isLoading, onSetWill
         </div>
 
         {/* Loading Overlay */}
-        {isLoading && (
-          <div className="absolute inset-0 bg-night-900/60 backdrop-blur-sm z-50 flex flex-col items-center justify-center select-none">
-            <div className="relative flex items-center justify-center">
-              {/* Outer pulsing circle */}
-              <div className="w-16 h-16 rounded-full border border-violet-accent/30 animate-ping absolute" />
-              {/* Inner rotating magic circle */}
-              <div className="w-12 h-12 rounded-full border-2 border-t-violet-accent border-r-transparent border-b-violet-accent border-l-transparent animate-spin" />
-              <span className="absolute text-sm text-violet-accent font-light">✦</span>
-            </div>
-            <p className="mt-4 text-xs font-mono tracking-widest text-violet-accent uppercase">Materializing Knowledge...</p>
-          </div>
-        )}
+        {isLoading && <MagickLoader />}
 
         {/* Core Explanation Panel */}
         <section className="bg-night-800 border border-night-border rounded-3xl p-6 sm:p-8 shadow-xl shadow-night-950/45">

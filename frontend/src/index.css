@@ -131,3 +131,27 @@ html, body, #root {
   animation: blink 0.8s step-end infinite;
   margin-left: 1px;
 }
+
+@keyframes spin-reverse {
+  from { transform: rotate(360deg); }
+  to { transform: rotate(0deg); }
+}
+
+.animate-spin-slow {
+  animation: spin 30s linear infinite;
+  transform-origin: center;
+}
+
+.animate-spin-reverse-slow {
+  animation: spin-reverse 25s linear infinite;
+  transform-origin: center;
+}
+
+.animate-spin-medium {
+  animation: spin 12s linear infinite;
+  transform-origin: center;
+}
+
+.animate-pulse-slow {
+  animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
