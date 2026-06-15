@@ -96,7 +96,7 @@ function EmptyDeck({ onSetWill, isLoading }) {
             value={customWill}
             onChange={(e) => setCustomWill(e.target.value)}
             disabled={isLoading}
-            placeholder="大いなる探求目標を入力してください... (例: GCP ACE 試験合格)"
+            placeholder="大いなる探求目標を入力してください..."
             className="flex-1 bg-transparent text-sm text-slate-200 placeholder-slate-600 focus:outline-none px-3 font-sans"
           />
           <button
@@ -239,9 +239,11 @@ function MagickLoader() {
 
 export default function MagickDeck({ will, currentResponse, isLoading, onSetWill, onDive }) {
   const [activeTerm, setActiveTerm] = useState(null);
+  const [customTopic, setCustomTopic] = useState('');
 
   useEffect(() => {
     setActiveTerm(null);
+    setCustomTopic('');
   }, [currentResponse]);
 
   if (!will || !currentResponse) {
@@ -291,6 +293,36 @@ export default function MagickDeck({ will, currentResponse, isLoading, onSetWill
               {explanation}
             </ReactMarkdown>
           </div>
+        </section>
+
+        {/* Free-form Custom Topic Dive Section */}
+        <section className="bg-night-800 border border-night-border rounded-3xl p-5 shadow-lg shadow-night-950/20 animate-fade-in space-y-3">
+          <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest font-mono">自由意志によるダイブ</h3>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (customTopic.trim() && !isLoading) {
+                onDive(customTopic.trim());
+              }
+            }}
+            className="flex gap-3 bg-night-900 border border-night-border focus-within:border-violet-accent/60 rounded-2xl p-2 transition-all duration-200"
+          >
+            <input
+              type="text"
+              value={customTopic}
+              onChange={(e) => setCustomTopic(e.target.value)}
+              disabled={isLoading}
+              placeholder="自由な目的地（トピック）を入力してさらにダイブする..."
+              className="flex-1 bg-transparent text-xs text-slate-200 placeholder-slate-600 focus:outline-none px-3 font-sans"
+            />
+            <button
+              type="submit"
+              disabled={isLoading || !customTopic.trim()}
+              className="bg-violet-accent hover:bg-violet-hover disabled:opacity-30 text-white font-medium text-xs rounded-xl px-4 py-2 transition-all duration-150 flex items-center gap-1 shadow-md shadow-violet-accent/10"
+            >
+              DIVE
+            </button>
+          </form>
         </section>
 
         {/* Term Suggestions Chips */}
