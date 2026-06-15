@@ -1,6 +1,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import Sidebar from './components/Sidebar';
 import MagickDeck from './components/MagickDeck';
+import RightSidebar from './components/RightSidebar';
 
 const FALLBACK_MODELS = [
   { id: 'deepseek-v4-flash', description: 'Fast & efficient' },
@@ -165,6 +166,7 @@ export default function App() {
           onDive={(topic) => diveTo(topic)}
         />
       </div>
+      <RightSidebar />
     </div>
   );
 }
