@@ -58,6 +58,9 @@ export default function App() {
       setIsLoading(true);
       setGuardrailAlert(null);
 
+      // Ensure React paints the MagickLoader immediately before the fetch thread starts blocking
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
       // Prepare request payload
       const requestPayload = {
         will: targetWill,

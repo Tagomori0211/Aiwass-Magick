@@ -97,7 +97,7 @@ function EmptyDeck({ onSetWill, isLoading }) {
             disabled={isLoading || !customWill.trim()}
             className="bg-violet-accent hover:bg-violet-hover disabled:opacity-30 text-white font-medium text-sm rounded-xl px-5 py-2 transition-all duration-150 flex items-center gap-1.5 shadow-lg shadow-violet-accent/20"
           >
-            召喚する
+            DIVE
           </button>
         </div>
       </form>
