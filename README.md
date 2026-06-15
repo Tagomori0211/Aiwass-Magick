@@ -206,6 +206,38 @@ npm run dev
 
 > Vite の開発プロキシにより `/api/*` リクエストは自動的に `http://localhost:8000` に転送されます。
 
+## 探索ワークフロー
+
+Aiwass Magick における知識探索は、以下の自律プロセスに基づいて行われます。
+
+```mermaid
+flowchart TD
+    Start([探索の開始]) --> WillInput[1. 意志の決定 Will Anchor]
+    WillInput -->|DIVE ボタン押下| Loader[2. 魔法陣の召喚 MagickLoader]
+    Loader -->|API 応答待ち / 同調率進捗| Materialize[3. 知識の物質化 Hadit]
+    Materialize --> Render[4. 探索画面の表示]
+    
+    Render --> SelectSuggest[5. 関連トピックの選択]
+    Render --> CustomInput[5. 自由意志によるダイブ]
+    Render --> TermClick[文脈用語の確認 Hint]
+    Render -->|履歴から復元| HistoryTravel[6. 過去へのタイムトラベル]
+    
+    SelectSuggest -->|DIVE| Loader
+    CustomInput -->|DIVE| Loader
+    HistoryTravel --> Render
+```
+
+### ✦ 各プロセスの詳細
+
+1. **意志の決定 (Will Anchor)**  
+   探求の軸となる目標（意志）を入力します。この意志は以降のすべてのダイブにおいてコンテキストの重力（軸）として維持され、探索のブレを防ぎます。
+2. **魔法陣の召喚と同調 (MagickLoader)**  
+   DIVE を実行すると、可能性空間（Nuit）から知識（Hadit）を物質化するための召喚プロセスが始まります。魔法陣が回転し、召喚同調率（%）がリアルタイムに進捗します。
+3. **知識の物質化**  
+   API 経由で構造化データが返され、Markdown形式の解説、文脈用語（Hadit概念）、関連トピックカードが描画されます。
+4. **自由意志ダイブ & 巻き戻し**  
+   サジェスト以外の自由なキーワードを入力してダイブしたり、サイドバーの履歴から過去の探索時点にタイムトラベルできます。
+
 ---
 
 ## 使い方
@@ -317,6 +349,13 @@ npm run dev
 - セリフ書体: **EB Garamond**（Google Fonts）
 - 本文: システムフォント `sans-serif`
 - コード: `JetBrains Mono`, `Fira Code`, `Consolas`
+
+## エージェント開発ルール (`.agents`)
+
+本リポジトリでは、AIエージェントが自律開発やデバッグを行う際の規律として、`.agents/rules/` ディレクトリ内にルールファイルを定義しています。
+
+- **README自動更新ルール ([readme-refresh.md](file:///c:/Users/SHINARI/Aiwass-Magick/.agents/rules/readme-refresh.md)):**
+  ソースコードに大規模な変更や仕様の追加があった場合、必ずその変更に合わせて `README.md` を最新の内容に改稿します。
 
 ---
 
