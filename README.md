@@ -322,7 +322,7 @@ npm run dev
 
 ## ライセンス
 
-[MIT License](LICENSE) © 2026 田籠 (Tagomori)
+[MIT License](LICENSE) © 2026 田籠 (Tagomori0211)
 
 ---
 

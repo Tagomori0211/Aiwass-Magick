@@ -71,7 +71,7 @@ function EmptyDeck({ onSetWill, isLoading }) {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-[80vh] text-center px-6 py-12 max-w-4xl mx-auto select-none animate-fade-in">
+    <div className="flex flex-col items-center justify-center min-h-[80vh] text-center px-6 py-12 max-w-4xl mx-auto select-none animate-fade-in relative">
       <div className="text-6xl mb-4 text-violet-accent animate-pulse-slow font-light">✦</div>
       <div className="mb-10 flex flex-col items-center justify-center py-6 px-10 border-y border-violet-accent/15 max-w-2xl mx-auto">
         {/* Calligraphy brush text with metallic gold gradient */}
@@ -128,6 +128,7 @@ function EmptyDeck({ onSetWill, isLoading }) {
           ))}
         </div>
       </div>
+      {isLoading && <MagickLoader />}
     </div>
   );
 }
