@@ -9,6 +9,7 @@ class Settings(BaseSettings):
     max_input_length: int = 10000
     rate_limit_per_minute: int = 20
     cors_origins: List[str] = ["http://localhost:3000", "http://localhost:80"]
+    obsidian_vault_path: str = "obsidian_vault"
 
     class Config:
         env_file = ".env"

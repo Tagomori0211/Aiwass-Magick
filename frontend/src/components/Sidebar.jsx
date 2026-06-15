@@ -1,117 +1,147 @@
 export default function Sidebar({
+  will,
+  history,
   model,
   models,
   temperature,
-  maxTokens,
   onModelChange,
   onTemperatureChange,
-  onMaxTokensChange,
-  onClear,
+  onHistoryClick,
+  onResetWill,
+  isLoading,
 }) {
   return (
-    <aside className="w-64 flex-shrink-0 bg-night-800 border-r border-night-border flex flex-col h-full">
+    <aside className="w-66 flex-shrink-0 bg-night-800 border-r border-night-border flex flex-col h-full select-none">
       {/* Logo */}
       <div className="px-5 py-6 border-b border-night-border">
         <div className="flex items-center gap-3">
-          <span className="text-2xl">✦</span>
+          <span className="text-2xl text-violet-accent animate-pulse-slow">✦</span>
           <div>
-            <h1 className="text-base font-semibold text-violet-accent leading-tight">Aiwass Magick</h1>
-            <p className="text-xs text-slate-500 mt-0.5">Knowledge Exploration</p>
+            <h1 className="text-sm font-bold text-violet-accent tracking-wider leading-tight">AIWASS MAGICK</h1>
+            <p className="text-[10px] text-slate-500 font-mono tracking-widest uppercase mt-0.5">Hadit & Nuit Engine</p>
           </div>
         </div>
       </div>
 
-      {/* Controls */}
-      <div className="flex-1 overflow-y-auto px-4 py-5 space-y-6">
-
-        {/* Model selector */}
-        <div>
-          <label className="block text-xs font-medium text-slate-400 uppercase tracking-wider mb-2">
-            Model
+      {/* Will Anchor Display */}
+      {will && (
+        <div className="px-4 py-4 border-b border-night-border bg-night-900/40">
+          <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1.5 font-mono">
+            Will Anchor
           </label>
-          <select
-            value={model}
-            onChange={(e) => onModelChange(e.target.value)}
-            className="w-full bg-night-700 border border-night-border text-slate-200 text-sm rounded-lg px-3 py-2 focus:outline-none focus:border-violet-accent cursor-pointer"
-          >
-            {models.map((m) => (
-              <option key={m.id} value={m.id}>
-                {m.id}
-              </option>
-            ))}
-          </select>
-          {models.find((m) => m.id === model)?.description && (
-            <p className="text-xs text-slate-500 mt-1.5 leading-snug">
-              {models.find((m) => m.id === model).description}
+          <div className="bg-violet-muted/10 border border-violet-accent/20 rounded-xl p-3 space-y-2">
+            <p className="text-xs text-slate-300 font-medium leading-relaxed break-words">
+              {will}
             </p>
+            <button
+              onClick={onResetWill}
+              disabled={isLoading}
+              className="text-[10px] text-red-400 hover:text-red-300 font-mono flex items-center gap-1 transition-colors disabled:opacity-30"
+            >
+              <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+              </svg>
+              Abandon Will
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* History / Pilgrimage Nodes */}
+      <div className="flex-1 overflow-y-auto px-4 py-5 flex flex-col min-h-0">
+        <div className="flex-1 flex flex-col min-h-0">
+          <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-3 font-mono">
+            Pilgrimage Path ({history.length})
+          </label>
+          {history.length === 0 ? (
+            <div className="flex-1 flex items-center justify-center text-center p-4 border border-dashed border-night-border rounded-xl">
+              <span className="text-xs text-slate-600 font-sans leading-relaxed">
+                Path is empty.<br />Initialize your Will to begin.
+              </span>
+            </div>
+          ) : (
+            <div className="flex-1 overflow-y-auto space-y-1.5 pr-1 max-h-[300px]">
+              {history.map((h, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => !isLoading && onHistoryClick(h, idx)}
+                  disabled={isLoading}
+                  className="w-full text-left bg-night-700/30 hover:bg-night-700/80 border border-night-border/50 hover:border-violet-accent/20 rounded-xl px-3 py-2.5 transition-all duration-150 group flex items-start gap-2.5 disabled:opacity-50"
+                  title="Click to roll back to this destination"
+                >
+                  <span className="text-[10px] text-violet-accent font-mono mt-0.5">0{idx + 1}</span>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs text-slate-400 group-hover:text-slate-200 transition-colors truncate font-sans">
+                      {h}
+                    </p>
+                  </div>
+                </button>
+              ))}
+            </div>
           )}
         </div>
 
-        {/* Temperature */}
-        <div>
-          <label className="flex justify-between text-xs font-medium text-slate-400 uppercase tracking-wider mb-2">
-            <span>Temperature</span>
-            <span className="text-violet-accent font-mono">{temperature.toFixed(1)}</span>
-          </label>
-          <input
-            type="range"
-            min={0}
-            max={2}
-            step={0.1}
-            value={temperature}
-            onChange={(e) => onTemperatureChange(parseFloat(e.target.value))}
-            className="w-full accent-violet-accent cursor-pointer"
-          />
-          <div className="flex justify-between text-xs text-slate-600 mt-1">
-            <span>Precise</span>
-            <span>Creative</span>
-          </div>
-        </div>
+        {/* Space divider */}
+        <div className="h-px bg-night-border my-5" />
 
-        {/* Max tokens */}
-        <div>
-          <label className="block text-xs font-medium text-slate-400 uppercase tracking-wider mb-2">
-            Max Tokens
-          </label>
-          <input
-            type="number"
-            min={256}
-            max={8192}
-            step={256}
-            value={maxTokens}
-            onChange={(e) => onMaxTokensChange(Math.max(256, Math.min(8192, parseInt(e.target.value) || 2048)))}
-            className="w-full bg-night-700 border border-night-border text-slate-200 text-sm rounded-lg px-3 py-2 focus:outline-none focus:border-violet-accent font-mono"
-          />
-        </div>
-
-        {/* Guardrail status */}
-        <div>
-          <label className="block text-xs font-medium text-slate-400 uppercase tracking-wider mb-2">
-            Safety Guardrails
-          </label>
-          <div className="flex items-center gap-2 bg-night-700 border border-night-border rounded-lg px-3 py-2">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 flex-shrink-0 animate-pulse-slow" />
-            <span className="text-xs text-emerald-400 font-medium">Active</span>
-            <span className="text-xs text-slate-500 ml-auto">4 layers</span>
+        {/* Controls */}
+        <div className="space-y-5">
+          {/* Model selector */}
+          <div>
+            <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 font-mono">
+              Model
+            </label>
+            <select
+              value={model}
+              onChange={(e) => onModelChange(e.target.value)}
+              className="w-full bg-night-700 border border-night-border text-slate-200 text-xs rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-violet-accent cursor-pointer font-sans"
+            >
+              {models.map((m) => (
+                <option key={m.id} value={m.id}>
+                  {m.id}
+                </option>
+              ))}
+            </select>
           </div>
-          <p className="text-xs text-slate-600 mt-1.5 leading-snug">
-            Injection · Jailbreak · Banned topics · Output scan
-          </p>
+
+          {/* Temperature */}
+          <div>
+            <label className="flex justify-between text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 font-mono">
+              <span>Temperature</span>
+              <span className="text-violet-accent font-mono">{temperature.toFixed(1)}</span>
+            </label>
+            <input
+              type="range"
+              min={0}
+              max={1.5}
+              step={0.1}
+              value={temperature}
+              onChange={(e) => onTemperatureChange(parseFloat(e.target.value))}
+              className="w-full accent-violet-accent cursor-pointer"
+            />
+            <div className="flex justify-between text-[9px] text-slate-600 mt-1 font-mono uppercase tracking-wider">
+              <span>Hadit (Precise)</span>
+              <span>Nuit (Creative)</span>
+            </div>
+          </div>
+
+          {/* Guardrail status */}
+          <div>
+            <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 font-mono">
+              Safety Guardrails
+            </label>
+            <div className="flex items-center gap-2 bg-night-700 border border-night-border rounded-lg px-3 py-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 flex-shrink-0 animate-pulse" />
+              <span className="text-[10px] text-emerald-400 font-bold uppercase tracking-wider font-mono">Active</span>
+              <span className="text-[10px] text-slate-500 ml-auto font-mono">4 layers</span>
+            </div>
+          </div>
         </div>
       </div>
 
       {/* Footer */}
-      <div className="px-4 py-4 border-t border-night-border">
-        <button
-          onClick={onClear}
-          className="w-full bg-night-700 hover:bg-night-600 border border-night-border text-slate-300 text-sm rounded-lg px-3 py-2 transition-colors duration-150 flex items-center justify-center gap-2"
-        >
-          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-          </svg>
-          New Conversation
-        </button>
-        <p className="text-center text-xs text-slate-700 mt-3">
+      <div className="px-4 py-4 border-t border-night-border text-center">
+        <p className="text-[10px] text-slate-600 font-mono tracking-widest uppercase">
           Powered by DeepSeek API
         </p>
       </div>

@@ -2,8 +2,14 @@
 @tailwind components;
 @tailwind utilities;
 
+@import url('https://fonts.googleapis.com/css2?family=Yuji+Boku&display=swap');
+
 /* highlight.js theme — github-dark */
 @import 'highlight.js/styles/github-dark.min.css';
+
+.font-calligraphy {
+  font-family: 'Yuji Boku', 'Hiragino Mincho ProN', 'BIZ UDMincho', serif;
+}
 
 * {
   box-sizing: border-box;

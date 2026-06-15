@@ -225,3 +225,6 @@ frontend/.vite/
 
 # Docker
 .docker/
+
+# Obsidian Vault
+backend/obsidian_vault/

@@ -1,22 +1,45 @@
-import { useState, useCallback, useEffect, useRef } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import Sidebar from './components/Sidebar';
-import ChatWindow from './components/ChatWindow';
+import MagickDeck from './components/MagickDeck';
 
 const FALLBACK_MODELS = [
   { id: 'deepseek-v4-flash', description: 'Fast & efficient' },
   { id: 'deepseek-v4-pro', description: 'Most capable' },
 ];
 
+function GuardrailAlert({ message, onDismiss }) {
+  return (
+    <div className="mx-6 mt-6 flex items-start gap-3 bg-red-950/60 border border-red-700/50 rounded-xl px-4 py-3 animate-fade-in">
+      <svg className="w-4 h-4 text-red-400 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+      </svg>
+      <div className="flex-1 min-w-0">
+        <p className="text-xs font-semibold text-red-400 mb-0.5">Guardrail Blocked</p>
+        <p className="text-xs text-red-300 break-words">{message}</p>
+      </div>
+      <button onClick={onDismiss} className="text-red-500 hover:text-red-300 flex-shrink-0 ml-1">
+        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+  );
+}
+
 export default function App() {
-  const [messages, setMessages] = useState([]);
-  const [isStreaming, setIsStreaming] = useState(false);
+  const [will, setWill] = useState('');
+  const [currentTopic, setCurrentTopic] = useState('');
+  const [history, setHistory] = useState([]);
+  const [cachedResponses, setCachedResponses] = useState([]);
+  const [currentResponse, setCurrentResponse] = useState(null);
+
+  const [isLoading, setIsLoading] = useState(false);
   const [models, setModels] = useState(FALLBACK_MODELS);
   const [model, setModel] = useState('deepseek-v4-flash');
   const [temperature, setTemperature] = useState(0.7);
-  const [maxTokens, setMaxTokens] = useState(2048);
   const [guardrailAlert, setGuardrailAlert] = useState(null);
-  const streamingRef = useRef('');
 
+  // Fetch model list on mount
   useEffect(() => {
     fetch('/api/models')
       .then((r) => r.json())
@@ -29,28 +52,26 @@ export default function App() {
       .catch(() => {});
   }, []);
 
-  const sendMessage = useCallback(
-    async (content) => {
-      if (isStreaming) return;
+  const diveTo = useCallback(
+    async (topic, targetWill = will, isNewWill = false) => {
+      if (isLoading) return;
+      setIsLoading(true);
       setGuardrailAlert(null);
 
-      const userMsg = { role: 'user', content };
-      const history = [...messages, userMsg];
-      setMessages([...history, { role: 'assistant', content: '', streaming: true }]);
-      setIsStreaming(true);
-      streamingRef.current = '';
+      // Prepare request payload
+      const requestPayload = {
+        will: targetWill,
+        current_topic: topic,
+        history: isNewWill ? [] : history,
+        model,
+        temperature,
+      };
 
       try {
-        const response = await fetch('/api/chat', {
+        const response = await fetch('/api/dive', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            messages: history,
-            model,
-            temperature,
-            max_tokens: maxTokens,
-            stream: true,
-          }),
+          body: JSON.stringify(requestPayload),
         });
 
         if (!response.ok) {
@@ -60,88 +81,94 @@ export default function App() {
           } else {
             setGuardrailAlert(err.detail || 'API request failed');
           }
-          setMessages(history);
           return;
         }
 
-        const reader = response.body.getReader();
-        const decoder = new TextDecoder();
-        let buf = '';
+        const data = await response.json();
 
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-          buf += decoder.decode(value, { stream: true });
-          const lines = buf.split('\n');
-          buf = lines.pop() ?? '';
-
-          for (const line of lines) {
-            if (!line.startsWith('data: ')) continue;
-            try {
-              const data = JSON.parse(line.slice(6));
-              if (data.error) {
-                setGuardrailAlert(data.error);
-                break;
-              }
-              if (data.done) break;
-              if (data.content) {
-                streamingRef.current += data.content;
-                const snap = streamingRef.current;
-                setMessages((prev) => {
-                  const next = [...prev];
-                  next[next.length - 1] = { role: 'assistant', content: snap, streaming: true };
-                  return next;
-                });
-              }
-            } catch {
-              // malformed SSE line — skip
-            }
-          }
+        if (isNewWill) {
+          setWill(targetWill);
+          setHistory([topic]);
+          setCachedResponses([data]);
+          setCurrentResponse(data);
+        } else {
+          setHistory((prev) => [...prev, topic]);
+          setCachedResponses((prev) => [...prev, data]);
+          setCurrentResponse(data);
         }
-
-        // Mark streaming done
-        setMessages((prev) => {
-          const next = [...prev];
-          const last = next[next.length - 1];
-          if (last?.role === 'assistant') {
-            next[next.length - 1] = { role: 'assistant', content: last.content, streaming: false };
-          }
-          return next;
-        });
+        setCurrentTopic(topic);
       } catch (err) {
         setGuardrailAlert(err.message || 'Connection failed');
-        setMessages(history);
       } finally {
-        setIsStreaming(false);
+        setIsLoading(false);
       }
     },
-    [isStreaming, messages, model, temperature, maxTokens]
+    [will, history, model, temperature, isLoading]
   );
 
-  const clearConversation = useCallback(() => {
-    setMessages([]);
+  const handleInitializeWill = useCallback(
+    (newWill) => {
+      // Set the root topic equal to the Will anchor
+      diveTo(newWill, newWill, true);
+    },
+    [diveTo]
+  );
+
+  const handleResetWill = useCallback(() => {
+    setWill('');
+    setCurrentTopic('');
+    setHistory([]);
+    setCachedResponses([]);
+    setCurrentResponse(null);
     setGuardrailAlert(null);
   }, []);
 
+  const handleHistoryClick = useCallback(
+    (topic, idx) => {
+      // Rollback to cached response to avoid extra API cost & loading delay
+      if (cachedResponses[idx]) {
+        setHistory(history.slice(0, idx + 1));
+        setCachedResponses(cachedResponses.slice(0, idx + 1));
+        setCurrentResponse(cachedResponses[idx]);
+        setCurrentTopic(topic);
+        setGuardrailAlert(null);
+      } else {
+        // Fallback: request from scratch
+        diveTo(topic);
+      }
+    },
+    [history, cachedResponses, diveTo]
+  );
+
   return (
-    <div className="flex h-screen bg-night-900 text-slate-200 overflow-hidden">
+    <div className="flex h-screen bg-night-900 text-slate-200 overflow-hidden font-sans">
       <Sidebar
+        will={will}
+        history={history}
         model={model}
         models={models}
         temperature={temperature}
-        maxTokens={maxTokens}
         onModelChange={setModel}
         onTemperatureChange={setTemperature}
-        onMaxTokensChange={setMaxTokens}
-        onClear={clearConversation}
+        onHistoryClick={handleHistoryClick}
+        onResetWill={handleResetWill}
+        isLoading={isLoading}
       />
-      <ChatWindow
-        messages={messages}
-        isStreaming={isStreaming}
-        onSend={sendMessage}
-        guardrailAlert={guardrailAlert}
-        onDismissAlert={() => setGuardrailAlert(null)}
-      />
+      <div className="flex-1 flex flex-col h-full overflow-hidden">
+        {guardrailAlert && (
+          <GuardrailAlert
+            message={guardrailAlert}
+            onDismiss={() => setGuardrailAlert(null)}
+          />
+        )}
+        <MagickDeck
+          will={will}
+          currentResponse={currentResponse}
+          isLoading={isLoading}
+          onSetWill={handleInitializeWill}
+          onDive={(topic) => diveTo(topic)}
+        />
+      </div>
     </div>
   );
 }

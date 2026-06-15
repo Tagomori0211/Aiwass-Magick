@@ -7,7 +7,7 @@ from slowapi.errors import RateLimitExceeded
 from slowapi.util import get_remote_address
 
 from .config import settings
-from .routers import chat, models
+from .routers import chat, models, dive
 
 logging.basicConfig(
     level=logging.INFO,
@@ -37,6 +37,7 @@ app.add_middleware(
 
 app.include_router(chat.router, prefix="/api")
 app.include_router(models.router, prefix="/api")
+app.include_router(dive.router, prefix="/api")
 
 
 @app.get("/health")
