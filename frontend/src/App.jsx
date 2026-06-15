@@ -7,14 +7,14 @@ const FALLBACK_MODELS = [
   { id: 'deepseek-v4-pro', description: 'Most capable' },
 ];
 
-function GuardrailAlert({ message, onDismiss }) {
+function ErrorAlert({ message, onDismiss }) {
   return (
     <div className="mx-6 mt-6 flex items-start gap-3 bg-red-950/60 border border-red-700/50 rounded-xl px-4 py-3 animate-fade-in">
       <svg className="w-4 h-4 text-red-400 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
       </svg>
       <div className="flex-1 min-w-0">
-        <p className="text-xs font-semibold text-red-400 mb-0.5 font-sans">安全防護陣による遮断</p>
+        <p className="text-xs font-semibold text-red-400 mb-0.5 font-sans">エラーが発生しました</p>
         <p className="text-xs text-red-300 break-words font-sans">{message}</p>
       </div>
       <button onClick={onDismiss} className="text-red-500 hover:text-red-300 flex-shrink-0 ml-1">
@@ -37,7 +37,7 @@ export default function App() {
   const [models, setModels] = useState(FALLBACK_MODELS);
   const [model, setModel] = useState('deepseek-v4-flash');
   const [temperature, setTemperature] = useState(0.7);
-  const [guardrailAlert, setGuardrailAlert] = useState(null);
+  const [errorAlert, setErrorAlert] = useState(null);
 
   // Fetch model list on mount
   useEffect(() => {
@@ -56,7 +56,7 @@ export default function App() {
     async (topic, targetWill = will, isNewWill = false) => {
       if (isLoading) return;
       setIsLoading(true);
-      setGuardrailAlert(null);
+      setErrorAlert(null);
 
       // Ensure React paints the MagickLoader immediately before the fetch thread starts blocking
       await new Promise((resolve) => setTimeout(resolve, 50));
@@ -79,17 +79,7 @@ export default function App() {
 
         if (!response.ok) {
           const err = await response.json();
-          if (err.detail?.error === 'guardrail_violation') {
-            // Translate guardrail type to Japanese for friendly UI
-            const scannerType = err.detail.scanner === 'PromptInjection' ? 'プロンプトインジェクション検知'
-                              : err.detail.scanner === 'Jailbreak' ? '脱獄検知'
-                              : err.detail.scanner === 'BannedTopics' ? '禁止トピック検知'
-                              : err.detail.scanner === 'TokenLimit' ? '文字数制限超過'
-                              : err.detail.scanner;
-            setGuardrailAlert(`[${scannerType}] 安全ポリシーに違反したため要求を遮断しました。`);
-          } else {
-            setGuardrailAlert(err.detail || 'APIリクエストに失敗しました。');
-          }
+          setErrorAlert(err.detail || 'APIリクエストに失敗しました。');
           return;
         }
 
@@ -107,7 +97,7 @@ export default function App() {
         }
         setCurrentTopic(topic);
       } catch (err) {
-        setGuardrailAlert(err.message || '接続に失敗しました。バックエンドの稼働状態を確認してください。');
+        setErrorAlert(err.message || '接続に失敗しました。バックエンドの稼働状態を確認してください。');
       } finally {
         setIsLoading(false);
       }
@@ -128,7 +118,7 @@ export default function App() {
     setHistory([]);
     setCachedResponses([]);
     setCurrentResponse(null);
-    setGuardrailAlert(null);
+    setErrorAlert(null);
   }, []);
 
   const handleHistoryClick = useCallback(
@@ -138,7 +128,7 @@ export default function App() {
         setCachedResponses(cachedResponses.slice(0, idx + 1));
         setCurrentResponse(cachedResponses[idx]);
         setCurrentTopic(topic);
-        setGuardrailAlert(null);
+        setErrorAlert(null);
       } else {
         diveTo(topic);
       }
@@ -161,10 +151,10 @@ export default function App() {
         isLoading={isLoading}
       />
       <div className="flex-1 flex flex-col h-full overflow-hidden">
-        {guardrailAlert && (
-          <GuardrailAlert
-            message={guardrailAlert}
-            onDismiss={() => setGuardrailAlert(null)}
+        {errorAlert && (
+          <ErrorAlert
+            message={errorAlert}
+            onDismiss={() => setErrorAlert(null)}
           />
         )}
         <MagickDeck

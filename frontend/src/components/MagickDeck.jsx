@@ -131,7 +131,6 @@ const LOADING_MESSAGES = [
   '文脈追従ベクトル（Haditの軌道）を計算中...',
   'Aiwass 錬成器を召喚中...',
   '概念の欠片 (Hadit) を物質化中...',
-  'ローカルの Obsidian に顕現ログを同期中...',
 ];
 
 function MagickLoader() {
@@ -262,15 +261,6 @@ export default function MagickDeck({ will, currentResponse, isLoading, onSetWill
                 {idx < breadcrumb.length - 1 && <span>/</span>}
               </span>
             ))}
-          </div>
-
-          {/* Sync status */}
-          <div className="flex items-center gap-2 self-start sm:self-center bg-violet-muted/20 border border-violet-accent/20 rounded-full px-3.5 py-1 text-xs">
-            <span className="w-1.5 h-1.5 rounded-full bg-violet-accent animate-pulse" />
-            <span className="text-slate-400 font-mono">顕現先 (Obsidian):</span>
-            <span className="text-violet-accent font-mono truncate max-w-[200px]" title={magick_metadata?.obsidian_path}>
-              {magick_metadata?.obsidian_path}
-            </span>
           </div>
         </div>
 

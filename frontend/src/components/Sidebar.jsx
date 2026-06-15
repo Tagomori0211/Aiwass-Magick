@@ -125,17 +125,7 @@ export default function Sidebar({
             </div>
           </div>
 
-          {/* Guardrail status */}
-          <div>
-            <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 font-mono">
-              安全防護陣 (ガードレール)
-            </label>
-            <div className="flex items-center gap-2 bg-night-700 border border-night-border rounded-lg px-3 py-1.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 flex-shrink-0 animate-pulse" />
-              <span className="text-[10px] text-emerald-400 font-bold uppercase tracking-wider font-mono">稼働中</span>
-              <span className="text-[10px] text-slate-500 ml-auto font-mono">4層防護</span>
-            </div>
-          </div>
+
         </div>
       </div>
 

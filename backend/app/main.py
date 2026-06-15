@@ -18,7 +18,7 @@ limiter = Limiter(key_func=get_remote_address)
 
 app = FastAPI(
     title="Aiwass Magick API",
-    description="LLM-powered knowledge exploration with safety guardrails",
+    description="LLM-powered knowledge exploration",
     version="0.1.0",
     docs_url="/api/docs",
     redoc_url=None,
