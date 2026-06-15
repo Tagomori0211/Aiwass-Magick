@@ -73,8 +73,15 @@ function EmptyDeck({ onSetWill, isLoading }) {
   return (
     <div className="flex flex-col items-center justify-center min-h-[80vh] text-center px-6 py-12 max-w-4xl mx-auto select-none animate-fade-in">
       <div className="text-6xl mb-4 text-violet-accent animate-pulse-slow font-light">✦</div>
-      <div className="mb-10 font-calligraphy text-2xl md:text-3xl text-violet-accent/90 tracking-widest leading-relaxed py-4 px-8 border-y border-violet-accent/15 max-w-xl mx-auto">
-        汝の意志することを行え、<br className="sm:hidden" />それが法の全てとならん。
+      <div className="mb-10 flex flex-col items-center justify-center py-6 px-10 border-y border-violet-accent/15 max-w-2xl mx-auto">
+        {/* Calligraphy brush text with metallic gold gradient */}
+        <div className="font-calligraphy text-3xl md:text-4xl tracking-widest leading-loose text-gold-metallic select-none pb-2">
+          汝の欲する所を為せ、<br />それが汝の法とならん
+        </div>
+        {/* Serif italic English subtext */}
+        <div className="font-serif-italic text-sm md:text-lg tracking-wider text-gold-metallic opacity-85 select-none pt-2">
+          Do what thou wilt shall be the whole of the Law
+        </div>
       </div>
       <h2 className="text-xl font-bold text-slate-200 mb-2 tracking-wide font-sans">探求意志の決定</h2>
       <p className="text-sm text-slate-500 max-w-md mb-8 leading-relaxed">
@@ -244,7 +251,7 @@ export default function MagickDeck({ will, currentResponse, isLoading, onSetWill
   const { breadcrumb, explanation, term_suggestions, related_topics, magick_metadata } = currentResponse;
 
   return (
-    <main className="flex-1 overflow-y-auto bg-night-900 px-6 py-8 relative">
+    <main className="flex-1 overflow-y-auto bg-cosmic-dark px-6 py-8 relative">
       <div className="max-w-4xl mx-auto space-y-8 animate-fade-in pb-16">
         
         {/* Navigation & Status Header */}

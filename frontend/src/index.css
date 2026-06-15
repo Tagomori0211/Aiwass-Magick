@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Yuji+Boku&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Yuji+Syuku&family=Yuji+Mai&family=EB+Garamond:ital,wght@0,400..800;1,400..800&display=swap');
 /* highlight.js theme — github-dark */
 @import 'highlight.js/styles/github-dark.min.css';
 
@@ -6,10 +6,30 @@
 @tailwind components;
 @tailwind utilities;
 
-
 .font-calligraphy {
-  font-family: 'Yuji Boku', 'Hiragino Mincho ProN', 'BIZ UDMincho', serif;
+  font-family: 'Yuji Syuku', 'Yuji Mai', 'Yuji Boku', 'Hiragino Mincho ProN', 'BIZ UDMincho', serif;
+  font-weight: 500;
 }
+
+.font-serif-italic {
+  font-family: 'EB Garamond', 'Georgia', serif;
+  font-style: italic;
+  font-weight: 500;
+}
+
+.text-gold-metallic {
+  background: linear-gradient(135deg, #eed080 0%, #b89030 30%, #fcf6ba 50%, #b89030 75%, #eed080 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  color: transparent;
+  display: inline-block;
+}
+
+.bg-cosmic-dark {
+  background: radial-gradient(circle at 50% 30%, #161630 0%, #07070f 100%);
+}
+
 
 * {
   box-sizing: border-box;
