@@ -25,12 +25,12 @@ export default function Sidebar({
 
       {/* Will Anchor Display */}
       {will && (
-        <div className="px-4 py-4 border-b border-night-border bg-night-900/40">
+        <div className="px-4 py-4 border-b border-night-border bg-night-900/40 animate-fade-in">
           <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1.5 font-mono">
-            Will Anchor
+            意志の重力 (Will Anchor)
           </label>
           <div className="bg-violet-muted/10 border border-violet-accent/20 rounded-xl p-3 space-y-2">
-            <p className="text-xs text-slate-300 font-medium leading-relaxed break-words">
+            <p className="text-xs text-slate-300 font-medium leading-relaxed break-words font-sans">
               {will}
             </p>
             <button
@@ -41,7 +41,7 @@ export default function Sidebar({
               <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
               </svg>
-              Abandon Will
+              意志の破棄
             </button>
           </div>
         </div>
@@ -51,12 +51,12 @@ export default function Sidebar({
       <div className="flex-1 overflow-y-auto px-4 py-5 flex flex-col min-h-0">
         <div className="flex-1 flex flex-col min-h-0">
           <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-3 font-mono">
-            Pilgrimage Path ({history.length})
+            巡礼の軌跡（探索履歴） ({history.length})
           </label>
           {history.length === 0 ? (
             <div className="flex-1 flex items-center justify-center text-center p-4 border border-dashed border-night-border rounded-xl">
               <span className="text-xs text-slate-600 font-sans leading-relaxed">
-                Path is empty.<br />Initialize your Will to begin.
+                軌跡が空です。<br />意志を決定して巡礼を開始してください。
               </span>
             </div>
           ) : (
@@ -67,7 +67,7 @@ export default function Sidebar({
                   onClick={() => !isLoading && onHistoryClick(h, idx)}
                   disabled={isLoading}
                   className="w-full text-left bg-night-700/30 hover:bg-night-700/80 border border-night-border/50 hover:border-violet-accent/20 rounded-xl px-3 py-2.5 transition-all duration-150 group flex items-start gap-2.5 disabled:opacity-50"
-                  title="Click to roll back to this destination"
+                  title="クリックしてこの目的地へ巻き戻す"
                 >
                   <span className="text-[10px] text-violet-accent font-mono mt-0.5">0{idx + 1}</span>
                   <div className="min-w-0 flex-1">
@@ -89,7 +89,7 @@ export default function Sidebar({
           {/* Model selector */}
           <div>
             <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 font-mono">
-              Model
+              召喚モデル (Model)
             </label>
             <select
               value={model}
@@ -107,7 +107,7 @@ export default function Sidebar({
           {/* Temperature */}
           <div>
             <label className="flex justify-between text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 font-mono">
-              <span>Temperature</span>
+              <span>温度（創造性）</span>
               <span className="text-violet-accent font-mono">{temperature.toFixed(1)}</span>
             </label>
             <input
@@ -120,20 +120,20 @@ export default function Sidebar({
               className="w-full accent-violet-accent cursor-pointer"
             />
             <div className="flex justify-between text-[9px] text-slate-600 mt-1 font-mono uppercase tracking-wider">
-              <span>Hadit (Precise)</span>
-              <span>Nuit (Creative)</span>
+              <span>Hadit (精密)</span>
+              <span>Nuit (創造)</span>
             </div>
           </div>
 
           {/* Guardrail status */}
           <div>
             <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 font-mono">
-              Safety Guardrails
+              安全防護陣 (ガードレール)
             </label>
             <div className="flex items-center gap-2 bg-night-700 border border-night-border rounded-lg px-3 py-1.5">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 flex-shrink-0 animate-pulse" />
-              <span className="text-[10px] text-emerald-400 font-bold uppercase tracking-wider font-mono">Active</span>
-              <span className="text-[10px] text-slate-500 ml-auto font-mono">4 layers</span>
+              <span className="text-[10px] text-emerald-400 font-bold uppercase tracking-wider font-mono">稼働中</span>
+              <span className="text-[10px] text-slate-500 ml-auto font-mono">4層防護</span>
             </div>
           </div>
         </div>

@@ -14,8 +14,8 @@ function GuardrailAlert({ message, onDismiss }) {
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
       </svg>
       <div className="flex-1 min-w-0">
-        <p className="text-xs font-semibold text-red-400 mb-0.5">Guardrail Blocked</p>
-        <p className="text-xs text-red-300 break-words">{message}</p>
+        <p className="text-xs font-semibold text-red-400 mb-0.5 font-sans">安全防護陣による遮断</p>
+        <p className="text-xs text-red-300 break-words font-sans">{message}</p>
       </div>
       <button onClick={onDismiss} className="text-red-500 hover:text-red-300 flex-shrink-0 ml-1">
         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -77,9 +77,15 @@ export default function App() {
         if (!response.ok) {
           const err = await response.json();
           if (err.detail?.error === 'guardrail_violation') {
-            setGuardrailAlert(`[${err.detail.scanner}] ${err.detail.reason}`);
+            // Translate guardrail type to Japanese for friendly UI
+            const scannerType = err.detail.scanner === 'PromptInjection' ? 'プロンプトインジェクション検知'
+                              : err.detail.scanner === 'Jailbreak' ? '脱獄検知'
+                              : err.detail.scanner === 'BannedTopics' ? '禁止トピック検知'
+                              : err.detail.scanner === 'TokenLimit' ? '文字数制限超過'
+                              : err.detail.scanner;
+            setGuardrailAlert(`[${scannerType}] 安全ポリシーに違反したため要求を遮断しました。`);
           } else {
-            setGuardrailAlert(err.detail || 'API request failed');
+            setGuardrailAlert(err.detail || 'APIリクエストに失敗しました。');
           }
           return;
         }
@@ -98,7 +104,7 @@ export default function App() {
         }
         setCurrentTopic(topic);
       } catch (err) {
-        setGuardrailAlert(err.message || 'Connection failed');
+        setGuardrailAlert(err.message || '接続に失敗しました。バックエンドの稼働状態を確認してください。');
       } finally {
         setIsLoading(false);
       }
@@ -108,7 +114,6 @@ export default function App() {
 
   const handleInitializeWill = useCallback(
     (newWill) => {
-      // Set the root topic equal to the Will anchor
       diveTo(newWill, newWill, true);
     },
     [diveTo]
@@ -125,7 +130,6 @@ export default function App() {
 
   const handleHistoryClick = useCallback(
     (topic, idx) => {
-      // Rollback to cached response to avoid extra API cost & loading delay
       if (cachedResponses[idx]) {
         setHistory(history.slice(0, idx + 1));
         setCachedResponses(cachedResponses.slice(0, idx + 1));
@@ -133,7 +137,6 @@ export default function App() {
         setCurrentTopic(topic);
         setGuardrailAlert(null);
       } else {
-        // Fallback: request from scratch
         diveTo(topic);
       }
     },
