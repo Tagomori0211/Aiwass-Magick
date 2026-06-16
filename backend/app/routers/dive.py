@@ -10,6 +10,8 @@ from slowapi.util import get_remote_address
 from typing import List
 
 from ..config import settings
+from ..services.search_service import search_web
+from ..services.rag_service import query_knowledge
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -43,6 +45,7 @@ Guidelines:
 2. "explanation": A thorough, rich, and high-quality explanation of the current topic, structured with Markdown (headings, bullet points, code blocks where appropriate).
 3. "term_suggestions": Extract 2 to 4 key terms mentioned in the explanation, along with a short helper hint. Do not suggest extremely basic terms.
 4. "related_topics": Provide 2 to 4 logically connected topics to explore next. These must be highly relevant to the current topic AND align with the user's Will.
+5. "Factuality & Hallucination Prevention": You MUST prioritize the provided reference contexts (Local RAG and Web Search) for factual information. Do not invent fictitious details, non-existent service features, or unverified facts. If the reference context is insufficient, base your response on established, verifiable knowledge.
 """
 
 class DiveRequest(BaseModel):
@@ -90,10 +93,22 @@ async def dive(body: DiveRequest, request: Request):
         base_url=settings.deepseek_base_url,
     )
 
+    # 1. RAG Local Knowledge Query
+    rag_context = query_knowledge(body.current_topic)
+    
+    # 2. Web Search Query
+    search_context = search_web(body.current_topic)
+
     user_content = f"Will: {body.will}\n"
     if body.history:
         user_content += f"Pilgrimage History: {', '.join(body.history)}\n"
-    user_content += f"Current Destination (Topic): {body.current_topic}"
+    user_content += f"Current Destination (Topic): {body.current_topic}\n\n"
+    user_content += "=== REFERENCE CONTEXTS (RAG & Web Search) ===\n"
+    user_content += "Use the following retrieved contexts as your primary fact base to prevent hallucinations:\n\n"
+    user_content += f"[Local RAG Knowledge]\n{rag_context}\n\n"
+    user_content += f"[Web Search Results]\n{search_context}\n\n"
+    user_content += "=============================================\n\n"
+    user_content += "Based on the reference contexts above, please generate the detailed explanation in Japanese. Avoid making up unverified facts."
 
     messages = [
         {"role": "system", "content": _SYSTEM_PROMPT},

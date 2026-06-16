@@ -37,6 +37,7 @@
 | **自由意志ダイブ** | サジェストに縛られず、任意のキーワードを自由に入力して次のトピックへダイブできます。 |
 | **日替わり意志サジェスト** | 日付をシードとした擬似乱数で、毎日異なる20種類の探求テーマから4つを提案します。 |
 | **Agentic 自己修正ループ** | LLMが英語で応答した場合、自動的に日本語への再生成を最大2回リトライする自己修正エージェントを内蔵しています。 |
+| **ハルシネーション抑止レイヤー** | 虚偽情報の生成を防ぐため、Web Search（Tavily/DuckDuckGo）とローカルRAG（専門ナレッジ）のハイブリッド参照コンテキストをLLMに注入します。 |
 
 ---
 
@@ -71,6 +72,8 @@
 | **Pydantic v2** | リクエスト/レスポンスのバリデーションとスキーマ定義 |
 | **SlowAPI** | レートリミッター |
 | **Uvicorn** | ASGI サーバー |
+| **duckduckgo-search** | APIキー不要の無料Web検索クライアント（フォールバック用） |
+| **Tavily API (任意)** | 高精度な検索エンジンAPI（環境変数からキー取得時のみ） |
 
 ### フロントエンド
 
@@ -213,8 +216,17 @@ Aiwass Magick における知識探索は、以下の自律プロセスに基づ
 ```mermaid
 flowchart TD
     Start([探索の開始]) --> WillInput[1. 意志の決定 Will Anchor]
-    WillInput -->|DIVE ボタン押下| Loader[2. 魔法陣の召喚 MagickLoader]
-    Loader -->|API 応答待ち / 同調率進捗| Materialize[3. 知識の物質化 Hadit]
+    WillInput -->|DIVE ボタン押下| Loader[2. 魔法陣 of 召喚 MagickLoader]
+    
+    subgraph バックエンドコンテキスト検索 [Back-end Context Retrieval]
+        Loader -->|DDG / Tavily 検索| WebSearch[Web Search 実行]
+        Loader -->|専門ナレッジ検索| LocalRAG[ローカル RAG 実行]
+    end
+    
+    WebSearch -->|コンテキスト合成| Prompt[プロンプトへ注入]
+    LocalRAG -->|コンテキスト合成| Prompt
+    
+    Prompt -->|API 応答待ち / 同調率進捗| Materialize[3. 知識の物質化 Hadit]
     Materialize --> Render[4. 探索画面の表示]
     
     Render --> SelectSuggest[5. 関連トピックの選択]
@@ -232,7 +244,7 @@ flowchart TD
 1. **意志の決定 (Will Anchor)**  
    探求の軸となる目標（意志）を入力します。この意志は以降のすべてのダイブにおいてコンテキストの重力（軸）として維持され、探索のブレを防ぎます。
 2. **魔法陣の召喚と同調 (MagickLoader)**  
-   DIVE を実行すると、可能性空間（Nuit）から知識（Hadit）を物質化するための召喚プロセスが始まります。魔法陣が回転し、召喚同調率（%）がリアルタイムに進捗します。
+   DIVE を実行すると、バックエンドで自動的に対象トピックに関する「Web検索（Tavily/DuckDuckGo）」と「ローカルRAG（専門ナレッジ）」が走ります。魔法陣アニメーションの進捗は、この「Web検索中（〜30%）」「RAG検索中（〜60%）」「LLM生成と物質化（〜99.9%）」の処理ステージと視覚的に同期・チューニングされています。
 3. **知識の物質化**  
    API 経由で構造化データが返され、Markdown形式の解説、文脈用語（Hadit概念）、関連トピックカードが描画されます。
 4. **自由意志ダイブ & 巻き戻し**  
@@ -326,6 +338,7 @@ flowchart TD
 | `DEEPSEEK_API_KEY` | DeepSeek API キー（**必須**） | — |
 | `DEEPSEEK_BASE_URL` | DeepSeek API ベース URL | `https://api.deepseek.com` |
 | `DEFAULT_MODEL` | デフォルトで使用するモデル | `deepseek-v4-flash` |
+| `TAVILY_API_KEY` | Tavily API キー（設定されている場合、Web検索で優先的に使用） | — |
 | `MAX_INPUT_LENGTH` | 入力文字数の上限 | `10000` |
 | `RATE_LIMIT_PER_MINUTE` | API レートリミット（回/分） | `20` |
 | `CORS_ORIGINS` | 許可するオリジン（JSON 配列） | `["http://localhost:3000","http://localhost:80"]` |

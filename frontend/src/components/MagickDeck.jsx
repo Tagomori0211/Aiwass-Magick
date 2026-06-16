@@ -133,37 +133,47 @@ function EmptyDeck({ onSetWill, isLoading }) {
   );
 }
 
-const LOADING_MESSAGES = [
-  '意志の重力 (Will Anchor) を調整中...',
-  '全可能性の空間 (Nuit) より知識を探索中...',
-  '文脈追従ベクトル（Haditの軌道）を計算中...',
-  'Aiwass 錬成器を召喚中...',
-  '概念の欠片 (Hadit) を物質化中...',
-];
-
 function MagickLoader() {
-  const [msgIdx, setMsgIdx] = useState(0);
   const [progress, setProgress] = useState(0.0);
-
-  useEffect(() => {
-    const msgTimer = setInterval(() => {
-      setMsgIdx((prev) => (prev + 1) % LOADING_MESSAGES.length);
-    }, 2500);
-    return () => clearInterval(msgTimer);
-  }, []);
 
   useEffect(() => {
     const progressTimer = setInterval(() => {
       setProgress((prev) => {
-        if (prev >= 99) return 99;
-        const diff = 99 - prev;
-        // Exponentially slows down as it approaches 99%
-        const step = Math.max(0.1, diff * 0.08);
+        if (prev >= 99.9) return 99.9;
+        
+        let step = 0.1;
+        if (prev < 30) {
+          // Fast startup during Web Search phase
+          step = 0.8 + Math.random() * 0.4;
+        } else if (prev < 60) {
+          // Medium speed during RAG lookup phase
+          step = 0.4 + Math.random() * 0.2;
+        } else if (prev < 90) {
+          // Slow down during generation phase
+          step = 0.15 + Math.random() * 0.1;
+        } else {
+          // Extremely slow approach to 99.9% while waiting for completion
+          const diff = 99.9 - prev;
+          step = Math.max(0.01, diff * 0.05);
+        }
+        
         return parseFloat((prev + step).toFixed(1));
       });
-    }, 120);
+    }, 150);
     return () => clearInterval(progressTimer);
   }, []);
+
+  const getLoadingMessage = (p) => {
+    if (p < 30) {
+      return 'Web検索より最新情報を探索中 (Tavily/DDG)...';
+    } else if (p < 60) {
+      return 'ローカルの魔術ナレッジ (RAG) との融合を計算中...';
+    } else if (p < 90) {
+      return 'コンテキストの重力 (Will Anchor) を合成中...';
+    } else {
+      return 'Aiwass 錬成器によりHaditを物質化中...';
+    }
+  };
 
   return (
     <div className="absolute inset-0 bg-night-950/90 backdrop-blur-md z-50 flex flex-col items-center justify-center select-none animate-fade-in p-6">
@@ -220,7 +230,7 @@ function MagickLoader() {
       <div className="mt-8 text-center space-y-3 max-w-sm">
         <div className="space-y-1">
           <p className="text-xs font-mono tracking-widest text-violet-accent uppercase animate-pulse">
-            {LOADING_MESSAGES[msgIdx]}
+            {getLoadingMessage(progress)}
           </p>
           <p className="text-[10px] text-slate-500 font-mono tracking-wider uppercase">
             Aiwass is materializing Nuit possibilities
